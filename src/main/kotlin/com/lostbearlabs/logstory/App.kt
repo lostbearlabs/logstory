@@ -3,6 +3,12 @@
  */
 package com.lostbearlabs.logstory
 
+import com.lostbearlabs.logstory.config.ConfigParser
+import com.lostbearlabs.logstory.log.LogParser
+import com.lostbearlabs.logstory.story.StoryExtractor
+import com.lostbearlabs.logstory.story.StoryReporter
+import java.io.File
+
 class App {
     val greeting: String
         get() {
@@ -11,5 +17,27 @@ class App {
 }
 
 fun main(args: Array<String>) {
-    println(App().greeting)
+    if( args.size!= 2) {
+        System.out.println("Usage:  logstory <configFile> <logFile>")
+        System.exit(1)
+    }
+
+    val configFile = File(args[0])
+    if( !configFile.exists()) {
+        System.out.println("Config file not found: " + configFile.path)
+        System.exit(0)
+    }
+
+    val logFile = File(args[1])
+    if( !logFile.exists()) {
+        System.out.println("Log file not found: " + logFile.path)
+        System.exit(0)
+    }
+
+    val config = ConfigParser().parseFile(configFile)
+    val lines = LogParser().parseFile(logFile, config)
+    val stories = StoryExtractor().run(lines, config)
+
+    // TODO pretty print
+    StoryReporter().print(stories)
 }

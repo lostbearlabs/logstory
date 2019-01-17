@@ -14,7 +14,7 @@ class ConfigParser {
     val filterLine = "filter (\\w+) (\\w+)".toRegex()
     val patternLine = "([\\w, ]+): (.+)".toRegex()
 
-    fun parseFile(file: File): Config {
+    public fun parseFile(file: File): Config {
         val text = file.readText()
         return this.parseString(text)
     }

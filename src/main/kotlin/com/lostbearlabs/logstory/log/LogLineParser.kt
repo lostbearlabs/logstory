@@ -3,7 +3,7 @@ package com.lostbearlabs.logstory.log
 import com.lostbearlabs.logstory.config.ConfigPattern
 
 
-class LogLineParser {
+public class LogLineParser {
 
     fun parse(lineNumber : Int,
               text : String,

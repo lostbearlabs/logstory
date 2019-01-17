@@ -3,7 +3,7 @@ package com.lostbearlabs.logstory.config
 /**
  * In-memory representation of a config file.
  */
-data class Config(
+public data class Config(
         val patterns: Set<ConfigPattern>,
         val filters : Set<ConfigFilter>) {
 
