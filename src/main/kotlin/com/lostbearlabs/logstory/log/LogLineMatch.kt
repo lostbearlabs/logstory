@@ -9,6 +9,6 @@ import java.util.*
  * matched field values.
  */
 data class LogLineMatch(
-        val actions : EnumSet<ConfigAction>,
-        val fields : Map<String, String>) {
+        val actions: EnumSet<ConfigAction>,
+        val fields: Map<String, String>) {
 }

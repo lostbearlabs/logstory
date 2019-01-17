@@ -2,16 +2,13 @@ package com.lostbearlabs.logstory.config
 
 import java.util.*
 import java.util.regex.Pattern
-import java.util.Collections
-import java.lang.reflect.InvocationTargetException
-
 
 
 /**
  * A regular expression to look for in the log file, along with any
  * actions associated with it.
  */
-data class ConfigPattern(val actions : EnumSet<ConfigAction>, val pattern : Pattern) {
+data class ConfigPattern(val actions: EnumSet<ConfigAction>, val pattern: Pattern) {
 
 
     /**
@@ -24,27 +21,42 @@ data class ConfigPattern(val actions : EnumSet<ConfigAction>, val pattern : Patt
 
         other as ConfigPattern
 
-        return actions==other.actions && pattern.toString()==other.pattern.toString()
+        return actions == other.actions && pattern.toString() == other.pattern.toString()
     }
 
-    val fieldNames : Set<String>
+    val fieldNames: Set<String>
         get() = getNamedGroups(pattern)
 
-    // see: https://stackoverflow.com/a/15596145/4540
+    /**
     @Throws(NoSuchMethodException::class, SecurityException::class, IllegalAccessException::class, IllegalArgumentException::class, InvocationTargetException::class)
     private fun getNamedGroups(regex: Pattern): Set<String> {
 
-        val namedGroupsMethod = Pattern::class.java.getDeclaredMethod("namedGroups")
-        namedGroupsMethod.isAccessible = true
+    val namedGroupsMethod = Pattern::class.java.getDeclaredMethod("namedGroups")
+    namedGroupsMethod.isAccessible = true
 
-        var namedGroups = namedGroupsMethod.invoke(regex)
+    var namedGroups = namedGroupsMethod.invoke(regex)
 
-        if (namedGroups == null) {
-            throw InternalError()
-        }
-
-        namedGroups as Map<String, Int>
-        return Collections.unmodifiableMap(namedGroups).keys
+    if (namedGroups == null) {
+    throw InternalError()
     }
 
+    @Suppress("UNCHECKED_CAST")
+    namedGroups as Map<String, Int>
+    return Collections.unmodifiableMap(namedGroups).keys
+    }
+     **/
+
+
+    // see: https://stackoverflow.com/a/15596145/4540
+    // The nice way to do this requires reflection access which generates a warning and will eventually stop working.
+    // So we're just going to try to parse the regex itself, which is also a dicey proposition.
+    private fun getNamedGroups(regex: Pattern): Set<String> {
+        val groups = HashSet<String>()
+        val groupNamePattern = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>")
+        val m = groupNamePattern.matcher(regex.pattern())
+        while( m.find()) {
+            groups.add(m.group(1).toString())
+        }
+        return groups
+    }
 }

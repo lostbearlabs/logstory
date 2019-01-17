@@ -5,9 +5,9 @@ import com.lostbearlabs.logstory.config.ConfigPattern
 
 public class LogLineParser {
 
-    fun parse(lineNumber : Int,
-              text : String,
-              patterns: Set<ConfigPattern>) : LogLine {
+    fun parse(lineNumber: Int,
+              text: String,
+              patterns: Set<ConfigPattern>): LogLine {
 
         val matches = HashSet<LogLineMatch>()
 
@@ -18,14 +18,14 @@ public class LogLineParser {
         return LogLine(lineNumber, text, matches)
     }
 
-    private fun parse(text: String, pattern : ConfigPattern,
-                      matches : HashSet<LogLineMatch>) {
+    private fun parse(text: String, pattern: ConfigPattern,
+                      matches: HashSet<LogLineMatch>) {
 
         val m = pattern.pattern.matcher(text)
-        while( m.find() ) {
-            val fields = HashMap<String,String>()
+        while (m.find()) {
+            val fields = HashMap<String, String>()
             pattern.fieldNames.forEach {
-               fields.put(it, m.group(it))
+                fields.put(it, m.group(it))
             }
 
             val match = LogLineMatch(pattern.actions, fields)

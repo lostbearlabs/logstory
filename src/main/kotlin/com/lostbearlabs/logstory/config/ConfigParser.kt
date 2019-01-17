@@ -1,10 +1,8 @@
 package com.lostbearlabs.logstory.config
 
 import java.io.File
-import java.lang.IllegalArgumentException
 import java.text.ParseException
 import java.util.*
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 
 // TODO: VALIDATION?
@@ -26,12 +24,11 @@ class ConfigParser {
         val lines = text.split("\n", "\r")
         var lineNumber = 1
         lines.forEach {
-            val tmp = AtomicBoolean()
 
             // trim any comments
             val line = it.split("#")[0]
 
-            if( line=="" || parseFilter(line, filters) || parsePattern(line, patterns)) {
+            if (line == "" || parseFilter(line, filters) || parsePattern(line, patterns)) {
                 // noop
             } else {
                 throw ParseException("invalid line: $line", lineNumber)
@@ -43,7 +40,7 @@ class ConfigParser {
         return Config(patterns, filters)
     }
 
-    fun parsePattern(line: String, patterns: HashSet<ConfigPattern>) : Boolean {
+    fun parsePattern(line: String, patterns: HashSet<ConfigPattern>): Boolean {
         val m = this.patternLine.matchEntire(line)
         if (m == null) {
             return false
@@ -55,14 +52,14 @@ class ConfigParser {
 
             val pattern = ConfigPattern(actions, regex)
             patterns.add(pattern)
-        } catch( e : IllegalArgumentException ) {
+        } catch (e: IllegalArgumentException) {
             return false
         }
 
         return true
     }
 
-    fun parseActions(st: String) : EnumSet<ConfigAction> {
+    fun parseActions(st: String): EnumSet<ConfigAction> {
         val actions = HashSet<ConfigAction>()
         val ar = st.split(" ", ",")
         ar.forEach {
@@ -75,7 +72,7 @@ class ConfigParser {
         return EnumSet.copyOf(actions)
     }
 
-    fun parseFilter(line: String, filters: HashSet<ConfigFilter>) : Boolean {
+    fun parseFilter(line: String, filters: HashSet<ConfigFilter>): Boolean {
         val m = this.filterLine.matchEntire(line)
         if (m == null) {
             return false

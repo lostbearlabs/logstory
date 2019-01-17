@@ -17,19 +17,19 @@ class App {
 }
 
 fun main(args: Array<String>) {
-    if( args.size!= 2) {
+    if (args.size != 2) {
         System.out.println("Usage:  logstory <configFile> <logFile>")
         System.exit(1)
     }
 
     val configFile = File(args[0])
-    if( !configFile.exists()) {
+    if (!configFile.exists()) {
         System.out.println("Config file not found: " + configFile.path)
         System.exit(0)
     }
 
     val logFile = File(args[1])
-    if( !logFile.exists()) {
+    if (!logFile.exists()) {
         System.out.println("Log file not found: " + logFile.path)
         System.exit(0)
     }

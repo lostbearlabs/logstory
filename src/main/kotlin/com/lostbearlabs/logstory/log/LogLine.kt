@@ -5,7 +5,7 @@ package com.lostbearlabs.logstory.log
  * data.
  */
 data class LogLine(
-        val lineNumber : Int,
-        val text : String,
-        val matches : Set<LogLineMatch>) {
+        val lineNumber: Int,
+        val text: String,
+        val matches: Set<LogLineMatch>) {
 }

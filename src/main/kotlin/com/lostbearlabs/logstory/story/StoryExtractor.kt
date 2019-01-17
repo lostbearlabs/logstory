@@ -15,16 +15,16 @@ class StoryExtractor {
         val completedStories = ArrayList<Story>()
 
         lines.forEach {
-            processLine(it, config, pendingStories, completedStories)
+            processLine(it, pendingStories, completedStories)
         }
 
-        if (!config.isEndRequired() ) {
+        if (!config.isEndRequired()) {
             completedStories.addAll(pendingStories)
         }
         return completedStories
     }
 
-    private fun processLine(line: LogLine, config: Config, pendingStories: ArrayList<Story>, completedStories: ArrayList<Story>) {
+    private fun processLine(line: LogLine, pendingStories: ArrayList<Story>, completedStories: ArrayList<Story>) {
         val toRemove = ArrayList<Story>()
         pendingStories.forEach {
             val completed = applyLineToStory(line, it)
@@ -34,22 +34,25 @@ class StoryExtractor {
             }
         }
 
+        var start = false
+        var restart = false
+        val story = Story(ArrayList<LogLine>())
         line.matches.forEach {
-            val start = it.actions.contains(ConfigAction.START)
-            val restart = it.actions.contains(ConfigAction.RESTART)
-            if( start || restart ) {
-                val story = Story(ArrayList<LogLine>())
-                if (matchValuesToStory(it, story)) {
-                    story.addLine(line)
-
-                    if( restart) {
-                        completedStories.addAll(pendingStories)
-                        toRemove.addAll(pendingStories)
-                    }
-
-                    pendingStories.add(story)
-                }
+            if (matchValuesToStory(it, story)) {
+                start = start || it.actions.contains(ConfigAction.START)
+                restart = restart || it.actions.contains(ConfigAction.RESTART)
             }
+        }
+
+        if (start || restart) {
+            story.addLine(line)
+
+            if (restart) {
+                completedStories.addAll(pendingStories)
+                toRemove.addAll(pendingStories)
+            }
+
+            pendingStories.add(story)
         }
 
         pendingStories.removeAll(toRemove)
@@ -59,13 +62,21 @@ class StoryExtractor {
      * @return whether the line both matched and is an END line
      */
     private fun applyLineToStory(line: LogLine, story: Story): Boolean {
+        var matchFound = false
+        var endFound = false
+
         line.matches.forEach {
             if (matchValuesToStory(it, story)) {
-                story.addLine(line)
-                return it.actions.contains(ConfigAction.END)
+                matchFound = true
+                endFound = it.actions.contains(ConfigAction.END)
             }
         }
-        return false
+
+        if (matchFound) {
+            story.addLine(line)
+        }
+
+        return endFound
     }
 
     private fun matchValuesToStory(match: LogLineMatch, story: Story): Boolean {

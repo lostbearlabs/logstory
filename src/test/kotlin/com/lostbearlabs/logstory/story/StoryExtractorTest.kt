@@ -6,7 +6,6 @@ import com.lostbearlabs.logstory.log.LogLine
 import com.lostbearlabs.logstory.log.LogParser
 import org.junit.Test
 import java.util.stream.Collectors
-import java.util.stream.Collectors.toSet
 import kotlin.test.assertEquals
 
 
@@ -31,7 +30,7 @@ class StoryExtractorTest {
             Run, Alice, run!
         """.trimIndent()
 
-        val extractedStories = stories.stream().map{ story -> story.toText()}.collect(Collectors.toSet());
+        val extractedStories = stories.stream().map { story -> story.toText() }.collect(Collectors.toSet());
         assertEquals(setOf(aliceStory, bobStory), extractedStories)
     }
 
@@ -52,11 +51,63 @@ class StoryExtractorTest {
             Run, Alice, run!
         """.trimIndent()
 
-        val extractedStories = stories.stream().map{ story -> story.toText()}.collect(Collectors.toSet());
+        val extractedStories = stories.stream().map { story -> story.toText() }.collect(Collectors.toSet());
         assertEquals(setOf(aliceStory, bobStory), extractedStories)
     }
 
-    fun givenLines(config: Config) : List<LogLine> {
+    @Test
+    fun run_twoFieldsMatch_bothInStory() {
+        val config = givenConfigWithTwoMatches();
+        val lines = givenLineWithTwoMatches(config)
+
+        val stories = StoryExtractor().run(lines, config)
+        val story = stories.get(0)
+
+        assertEquals(mapOf(Pair("a", "x"), Pair("b", "y")), story.fields)
+    }
+
+    @Test
+    fun run_twoFieldsInStartLineMatch_bothInStory() {
+        val config = givenConfigWithTwoMatchesInStartLine();
+        val lines = givenLineWithTwoMatches(config)
+
+        val stories = StoryExtractor().run(lines, config)
+        val story = stories.get(0)
+
+        assertEquals(mapOf(Pair("a", "x"), Pair("b", "y")), story.fields)
+    }
+
+    fun givenConfigWithTwoMatches(): Config {
+
+        val configText = """
+            start: start
+            match: a=(?<a>\w+)
+            match: b=(?<b>\w+)
+        """.trimIndent()
+
+        return ConfigParser().parseString(configText)
+    }
+
+    fun givenConfigWithTwoMatchesInStartLine(): Config {
+
+        val configText = """
+            start: a=(?<a>\w+)
+            match: b=(?<b>\w+)
+        """.trimIndent()
+
+        return ConfigParser().parseString(configText)
+    }
+
+    fun givenLineWithTwoMatches(config: Config): List<LogLine> {
+        val logText = """
+            start
+            a=x b=y
+        """.trimIndent()
+
+        return LogParser().parseText(logText, config)
+    }
+
+    fun givenLines(config: Config): List<LogLine> {
         val logText = """
             See Bob.
             See Alice.

@@ -4,10 +4,10 @@ import org.junit.Test
 import java.text.ParseException
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlin.test.assertEquals
 
 
 class ConfigParserTest {

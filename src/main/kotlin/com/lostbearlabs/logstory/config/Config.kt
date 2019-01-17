@@ -5,12 +5,12 @@ package com.lostbearlabs.logstory.config
  */
 public data class Config(
         val patterns: Set<ConfigPattern>,
-        val filters : Set<ConfigFilter>) {
+        val filters: Set<ConfigFilter>) {
 
     /**
      * If ANY end line is marked as required, then
      */
-    fun isEndRequired() : Boolean {
+    fun isEndRequired(): Boolean {
         return patterns.stream().anyMatch { it.actions.contains(ConfigAction.END) && it.actions.contains(ConfigAction.REQUIRED) }
     }
 }
