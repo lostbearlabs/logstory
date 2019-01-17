@@ -25,8 +25,6 @@ If we want to separate the stories of the three dogs we can tell LogStory how th
 ```
 # configuration 'dog-config'
 
-interleaved: true
-
 start: (?<name>\w+) is a (?<breed>\w)
 match, required: See (?<name>\w+) run
 end: (?<name>\w+) has a (?<color>w+) ball
@@ -60,19 +58,6 @@ Bear has a blue ball.
 
 Lines that begin with `#` are ignored.
 
-### Interleaving
-
-Some log files will have interleaved stories, such as multiple clients using a server simultaneously.  Others will have sequential stories, like a server starting and stopping.  
-
-Specify this in your config with one of the following:
-
-```
-# pick one!
-interleaved: true
-interleaved: false
-```
-
-If you don't specify either, then the default is `true`.
 
 ### Patterns
 
@@ -87,6 +72,7 @@ The `regex` is just a regex.  It may contain named fields.
 The possible values for `action` are:
 
 * `start` - a line matching this pattern marks the beginning of a story.
+* `restart` - a line matching this pattern marks the beginning of a story and also treats any other stories in progress as ended.  Use this for files where stories don't overlap each other.
 * `end` - a line matching this pattern marks the end of a story.
 * `match` - a line matching this pattern can be part of a story but is neither the beginning nor the end.
 * `required` - at least one line matching this pattern must be part of every story.  This can be combined with `end` or `match`.
@@ -107,6 +93,7 @@ If there are patterns that are marked both `required` and `end` then every story
 
 Otherwise, a story ends when:
 * an `end` action is encountered
+* a `restart` action is encountered
 * the end of the log file is reached
 
 ### What lines go into a story?

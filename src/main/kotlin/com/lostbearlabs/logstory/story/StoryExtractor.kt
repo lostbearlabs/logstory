@@ -33,17 +33,26 @@ class StoryExtractor {
                 toRemove.add(it)
             }
         }
-        pendingStories.removeAll(toRemove)
 
         line.matches.forEach {
-            if( it.actions.contains(ConfigAction.START)) {
+            val start = it.actions.contains(ConfigAction.START)
+            val restart = it.actions.contains(ConfigAction.RESTART)
+            if( start || restart ) {
                 val story = Story(ArrayList<LogLine>())
                 if (matchValuesToStory(it, story)) {
                     story.addLine(line)
+
+                    if( restart) {
+                        completedStories.addAll(pendingStories)
+                        toRemove.addAll(pendingStories)
+                    }
+
                     pendingStories.add(story)
                 }
             }
         }
+
+        pendingStories.removeAll(toRemove)
     }
 
     /**

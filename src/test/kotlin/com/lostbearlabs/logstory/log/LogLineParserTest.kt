@@ -34,10 +34,9 @@ class LogLineParserTest {
 
     fun givenConfig(): Config {
         val actions = EnumSet.of(ConfigAction.MATCH)
-        val interleaved = true
         var rx = Pattern.compile("(?<foo>abc)(?<bar>xyz)")
         var pattern = ConfigPattern(actions, rx)
-        return Config(setOf(pattern), interleaved, HashSet())
+        return Config(setOf(pattern), HashSet())
     }
 
 }

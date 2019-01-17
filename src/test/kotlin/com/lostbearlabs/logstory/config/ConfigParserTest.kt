@@ -13,50 +13,6 @@ import kotlin.test.assertEquals
 class ConfigParserTest {
 
     @Test
-    fun parse_interleavedNotSpecified_interleavedIsFalse() {
-        val text = ""
-        val parser = ConfigParser()
-
-        val config = parser.parseString(text)
-
-        assertFalse(config.interleaved)
-    }
-
-    @Test
-    fun parse_interleavedSpecifiedFalse_interleavedIsFalse() {
-        val text = "interleaved: false"
-        val parser = ConfigParser()
-
-        val config = parser.parseString(text)
-
-        assertFalse(config.interleaved)
-    }
-
-    @Test
-    fun parse_interleavedSpecifiedTrue_interleavedIsTrue() {
-        val text = "interleaved: true"
-        val parser = ConfigParser()
-
-        val config = parser.parseString(text)
-
-        assertTrue(config.interleaved)
-    }
-
-    @Test
-    fun parse_interleavedSpecifiedTwice_throws() {
-        val text = """
-            interleaved: false
-            interleaved: true
-        """.trimIndent()
-        val parser = ConfigParser()
-
-        assertFailsWith(ParseException::class) {
-            parser.parseString(text)
-        }
-
-    }
-
-    @Test
     fun parse_filterSpecified_recordsFilter() {
         val text = "filter x y"
         val parser = ConfigParser()

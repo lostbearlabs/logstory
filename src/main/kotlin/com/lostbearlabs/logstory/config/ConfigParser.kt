@@ -11,7 +11,6 @@ import java.util.regex.Pattern
 // -- check that use of END/REQUIRED is consistent?
 
 class ConfigParser {
-    val interleavedLine = "interleaved: (true|false)".toRegex()
     val filterLine = "filter (\\w+) (\\w+)".toRegex()
     val patternLine = "([\\w, ]+): (.+)".toRegex()
 
@@ -23,7 +22,6 @@ class ConfigParser {
     fun parseString(text: String): Config {
         val filters = HashSet<ConfigFilter>()
         val patterns = HashSet<ConfigPattern>()
-        var interleaved: Boolean? = null
 
         val lines = text.split("\n", "\r")
         var lineNumber = 1
@@ -35,12 +33,6 @@ class ConfigParser {
 
             if( line=="" || parseFilter(line, filters) || parsePattern(line, patterns)) {
                 // noop
-            } else if (parseInterleaved(line, tmp)) {
-                if (interleaved == null) {
-                    interleaved = tmp.get()
-                } else {
-                    throw ParseException("interleaved specified twice", lineNumber)
-                }
             } else {
                 throw ParseException("invalid line: $line", lineNumber)
             }
@@ -48,7 +40,7 @@ class ConfigParser {
             lineNumber++
         }
 
-        return Config(patterns, interleaved ?: false, filters)
+        return Config(patterns, filters)
     }
 
     fun parsePattern(line: String, patterns: HashSet<ConfigPattern>) : Boolean {
@@ -92,16 +84,6 @@ class ConfigParser {
         val filter = ConfigFilter(m.groupValues.get(1), m.groupValues.get(2))
         filters.add(filter)
 
-        return true
-    }
-
-    fun parseInterleaved(line: String, tmp: AtomicBoolean): Boolean {
-        val m = this.interleavedLine.matchEntire(line)
-        if (m == null) {
-            return false;
-        }
-
-        tmp.set(m.groupValues.get(1) == "true")
         return true
     }
 

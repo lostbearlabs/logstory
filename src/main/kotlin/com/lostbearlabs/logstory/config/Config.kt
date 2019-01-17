@@ -5,7 +5,6 @@ package com.lostbearlabs.logstory.config
  */
 data class Config(
         val patterns: Set<ConfigPattern>,
-        val interleaved: Boolean,
         val filters : Set<ConfigFilter>) {
 
     /**

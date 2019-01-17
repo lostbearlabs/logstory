@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 class StoryExtractorTest {
 
     @Test
-    fun run_happyPath_getsStory() {
+    fun run_happyPath_getsStories() {
         val config = givenConfig()
         val lines = givenLines(config)
 
@@ -23,6 +23,27 @@ class StoryExtractorTest {
             See Bob.
             See Bob run.
             Run, Bob, run!
+        """.trimIndent()
+
+        val aliceStory = """
+            See Alice.
+            See Alice run.
+            Run, Alice, run!
+        """.trimIndent()
+
+        val extractedStories = stories.stream().map{ story -> story.toText()}.collect(Collectors.toSet());
+        assertEquals(setOf(aliceStory, bobStory), extractedStories)
+    }
+
+    @Test
+    fun run_withRestart_getsStories() {
+        val config = givenConfigWithRestart()
+        val lines = givenLines(config)
+
+        val stories = StoryExtractor().run(lines, config)
+
+        val bobStory = """
+            See Bob.
         """.trimIndent()
 
         val aliceStory = """
@@ -51,6 +72,16 @@ class StoryExtractorTest {
     fun givenConfig(): Config {
         val configText = """
             start: See (?<name>\w+)\.
+            match: See (?<name>\w+) run\.
+            end: Run, (?<name>\w+), run\!
+        """.trimIndent()
+
+        return ConfigParser().parseString(configText)
+    }
+
+    fun givenConfigWithRestart(): Config {
+        val configText = """
+            restart: See (?<name>\w+)\.
             match: See (?<name>\w+) run\.
             end: Run, (?<name>\w+), run\!
         """.trimIndent()

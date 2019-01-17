@@ -7,5 +7,6 @@ enum class ConfigAction {
     START,
     END,
     REQUIRED,
-    MATCH
+    MATCH,
+    RESTART
 }
