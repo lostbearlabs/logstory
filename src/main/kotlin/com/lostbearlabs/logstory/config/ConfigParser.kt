@@ -7,6 +7,8 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 
+// TODO: VALIDATION?
+// -- check that use of END/REQUIRED is consistent?
 
 class ConfigParser {
     val interleavedLine = "interleaved: (true|false)".toRegex()

@@ -7,4 +7,11 @@ data class Config(
         val patterns: Set<ConfigPattern>,
         val interleaved: Boolean,
         val filters : Set<ConfigFilter>) {
+
+    /**
+     * If ANY end line is marked as required, then
+     */
+    fun isEndRequired() : Boolean {
+        return patterns.stream().anyMatch { it.actions.contains(ConfigAction.END) && it.actions.contains(ConfigAction.REQUIRED) }
+    }
 }

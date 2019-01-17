@@ -134,5 +134,31 @@ class ConfigParserTest {
         val pattern = config.patterns.stream().findFirst().get()
         assertEquals(setOf("foo", "bar"), pattern.fieldNames);
     }
+
+    @Test
+    fun parse_endRequiredOnce_endIsRequired() {
+        val text = """
+            end: xyz
+            end, required: abc
+        """.trimIndent()
+        val parser = ConfigParser()
+
+        val config = parser.parseString(text)
+
+        assertTrue(config.isEndRequired())
+    }
+
+    @Test
+    fun parse_endRequiredNever_endIsNotRequired() {
+        val text = """
+            end: xyz
+            end: abc
+        """.trimIndent()
+        val parser = ConfigParser()
+
+        val config = parser.parseString(text)
+
+        assertFalse(config.isEndRequired())
+    }
 }
 

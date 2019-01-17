@@ -37,13 +37,13 @@ data class ConfigPattern(val actions : EnumSet<ConfigAction>, val pattern : Patt
         val namedGroupsMethod = Pattern::class.java.getDeclaredMethod("namedGroups")
         namedGroupsMethod.isAccessible = true
 
-        var namedGroups: Map<String, Int>? = null
-        namedGroups = namedGroupsMethod.invoke(regex) as Map<String, Int>
+        var namedGroups = namedGroupsMethod.invoke(regex)
 
         if (namedGroups == null) {
             throw InternalError()
         }
 
+        namedGroups as Map<String, Int>
         return Collections.unmodifiableMap(namedGroups).keys
     }
 
