@@ -118,5 +118,5 @@ filter color Blue
 Filter lines have the syntax:
 
 ```
-filter [field] value
+filter field value
 ```

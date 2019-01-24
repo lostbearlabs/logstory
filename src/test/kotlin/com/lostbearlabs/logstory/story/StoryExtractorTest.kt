@@ -77,6 +77,23 @@ class StoryExtractorTest {
         assertEquals(mapOf(Pair("a", "x"), Pair("b", "y")), story.fields)
     }
 
+    @Test
+    fun run_withFilters_returnsMatchingStory() {
+        val config = givenConfigWithBobFilter()
+        val lines = givenLines(config)
+
+        val stories = StoryExtractor().run(lines, config)
+
+        val bobStory = """
+            See Bob.
+            See Bob run.
+            Run, Bob, run!
+        """.trimIndent()
+
+        val extractedStories = stories.stream().map { story -> story.toText() }.collect(Collectors.toSet());
+        assertEquals(setOf(bobStory), extractedStories)
+    }
+
     fun givenConfigWithTwoMatches(): Config {
 
         val configText = """
@@ -125,6 +142,17 @@ class StoryExtractorTest {
             start: See (?<name>\w+)\.
             match: See (?<name>\w+) run\.
             end: Run, (?<name>\w+), run\!
+        """.trimIndent()
+
+        return ConfigParser().parseString(configText)
+    }
+
+    fun givenConfigWithBobFilter(): Config {
+        val configText = """
+            start: See (?<name>\w+)\.
+            match: See (?<name>\w+) run\.
+            end: Run, (?<name>\w+), run\!
+            filter name Bob
         """.trimIndent()
 
         return ConfigParser().parseString(configText)
