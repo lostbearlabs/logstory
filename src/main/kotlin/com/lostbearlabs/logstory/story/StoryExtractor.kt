@@ -27,67 +27,113 @@ class StoryExtractor {
 
     private fun processLine(line: LogLine, pendingStories: ArrayList<Story>, completedStories: ArrayList<Story>,
                             filters : Set<ConfigFilter>) {
-        val toRemove = ArrayList<Story>()
-        pendingStories.forEach {
-            val completed = applyLineToStory(line, it)
-            if (completed) {
-                completedStories.add(it)
-                toRemove.add(it)
-            }
-        }
 
-        // This line *might* indicate the start of a new story.
-        var start = false
-        var restart = false
-        val story = Story(ArrayList<LogLine>())
-        filters.forEach {
-            story.fields.put(it.fieldName, it.fieldValue)
-        }
-        line.matches.forEach {
-            if (matchValuesToStory(it, story)) {
-                start = start || it.actions.contains(ConfigAction.START)
-                restart = restart || it.actions.contains(ConfigAction.RESTART)
-            }
-        }
+        // End any pending stories that will be restarted by this line
+        val storiesRestarted = this.getStoriesRestartedByLine(line, pendingStories)
+        pendingStories.removeAll(storiesRestarted)
+        completedStories.addAll(storiesRestarted)
 
-        if (start || restart) {
-            story.addLine(line)
+        // Add this line to any pending stories that it matches
+        // (And update them with any new fields from the line)
+        applyLineToStories(line, pendingStories)
 
-            if (restart) {
-                completedStories.addAll(pendingStories)
-                toRemove.addAll(pendingStories)
-            }
+        // End any pending stories that are ended by this line
+        val storiesEnded = this.getStoriesEndedByLine(line, pendingStories)
+        pendingStories.removeAll(storiesEnded)
+        completedStories.addAll(storiesEnded)
 
-            pendingStories.add(story)
-        }
-
-        pendingStories.removeAll(toRemove)
+        // Create any new story that might be started by this line
+        val storiesStarted =  this.getStoriesStartedByLine(line, filters)
+        pendingStories.addAll(storiesStarted)
     }
 
-    /**
-     * @return whether the line both matched and is an END line
-     */
-    private fun applyLineToStory(line: LogLine, story: Story): Boolean {
+    private fun getStoriesStartedByLine(line: LogLine, filters: Set<ConfigFilter>): Collection<Story> {
+        val storiesAdded = ArrayList<Story>()
+
+        // This line might indicate the start of a new story.
+        var start = false
+
+        // Any new story must honor all filters.  Just apply them as values
+        // to the story when it's created, and that will prevent any mis-matches
+        // from the start.
+        val story = Story(ArrayList())
+        filters.forEach {
+            story.fields[it.fieldName] = it.fieldValue
+        }
+
+        // Is there a START pattern that matches this line?  If so,
+        // the line begins a story.
+        line.matches.forEach {
+            if (matchValuesToStory(it, story)) {
+                start = start || it.actions.contains(ConfigAction.START) || it.actions.contains(ConfigAction.RESTART)
+            }
+        }
+
+        if (start ) {
+            story.addLine(line)
+            storiesAdded.add(story)
+        }
+
+        return storiesAdded
+    }
+
+    private fun getStoriesRestartedByLine(line: LogLine, pendingStories: ArrayList<Story>) : ArrayList<Story> {
+        return getStoriesMatchedByLineHavingAction(line, pendingStories, ConfigAction.RESTART)
+    }
+
+    private fun getStoriesEndedByLine(line: LogLine, pendingStories: ArrayList<Story>) : ArrayList<Story> {
+        return getStoriesMatchedByLineHavingAction(line, pendingStories, ConfigAction.END)
+    }
+
+    private fun getStoriesMatchedByLineHavingAction(line: LogLine, pendingStories: ArrayList<Story>, action: ConfigAction) : ArrayList<Story> {
+        val storiesMatched = ArrayList<Story>()
+
+        pendingStories.forEach {
+            if( storyMatchedByLineHavingAction(line, it, action)) {
+                storiesMatched.add(it)
+            }
+        }
+
+        return storiesMatched
+    }
+
+    private fun storyMatchedByLineHavingAction(line: LogLine, story: Story, action: ConfigAction): Boolean {
+        var matched = false
+        line.matches.forEach {
+            if (matchValuesToStory(it, story)) {
+                matched = matched || it.actions.contains(action)
+            }
+        }
+        return matched
+    }
+
+
+
+
+
+    private fun applyLineToStories(line: LogLine, pendingStories: ArrayList<Story>) {
+        pendingStories.forEach {
+            applyLineToStory(line, it)
+        }
+    }
+
+    private fun applyLineToStory(line: LogLine, story: Story) {
         var matchFound = false
-        var endFound = false
 
         line.matches.forEach {
             if (matchValuesToStory(it, story)) {
                 matchFound = true
-                endFound = it.actions.contains(ConfigAction.END)
             }
         }
 
         if (matchFound) {
             story.addLine(line)
         }
-
-        return endFound
     }
 
     private fun matchValuesToStory(match: LogLineMatch, story: Story): Boolean {
         match.fields.forEach {
-            if (story.fields.contains(it.key) && story.fields.get(it.key) != it.value) {
+            if (story.fields.contains(it.key) && story.fields[it.key] != it.value) {
                 // there's already a conflicting value, this line is not part of this story
                 return false
             }
@@ -95,7 +141,7 @@ class StoryExtractor {
 
         match.fields.forEach {
             // from above, there's either no value yet or it's the same -- absorb it
-            story.fields.put(it.key, it.value)
+            story.fields[it.key] = it.value
         }
 
         return true

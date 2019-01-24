@@ -9,3 +9,6 @@ out
 .idea
 logstory.iml
 
+# Scrath file I write to during test runs
+foo.txt
+

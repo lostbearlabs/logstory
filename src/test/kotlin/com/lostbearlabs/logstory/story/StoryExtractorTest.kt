@@ -35,8 +35,8 @@ class StoryExtractorTest {
     }
 
     @Test
-    fun run_withRestart_getsStories() {
-        val config = givenConfigWithRestart()
+    fun run_withUnparameterizedRestart_getsStories() {
+        val config = givenConfigWithUnparemeterizedRestart()
         val lines = givenLines(config)
 
         val stories = StoryExtractor().run(lines, config)
@@ -47,12 +47,41 @@ class StoryExtractorTest {
 
         val aliceStory = """
             See Alice.
+            See Bob run.
+            Run, Bob, run!
+        """.trimIndent()
+
+        val extractedStories = stories.stream().map { story -> story.toText() }.collect(Collectors.toSet());
+        assertEquals(setOf(aliceStory, bobStory), extractedStories)
+    }
+
+    @Test
+    fun run_withParameterizedRestart_honorsParameters() {
+        val config = givenConfigWithParameterizedRestart()
+        val lines = givenLinesWithThreeStories(config)
+
+        val stories = StoryExtractor().run(lines, config)
+
+        val bobStory = """
+            See Bob.
+            See Bob run.
+            Run, Bob, run!
+        """.trimIndent()
+
+        val bobStory2 = """
+            See Bob.
+            See Bob walk.
+            Walk, Bob, walk!
+        """.trimIndent()
+
+        val aliceStory = """
+            See Alice.
             See Alice run.
             Run, Alice, run!
         """.trimIndent()
 
         val extractedStories = stories.stream().map { story -> story.toText() }.collect(Collectors.toSet());
-        assertEquals(setOf(aliceStory, bobStory), extractedStories)
+        assertEquals(setOf(aliceStory, bobStory, bobStory2), extractedStories)
     }
 
     @Test
@@ -137,6 +166,22 @@ class StoryExtractorTest {
         return LogParser().parseText(logText, config)
     }
 
+    fun givenLinesWithThreeStories(config: Config): List<LogLine> {
+        val logText = """
+            See Bob.
+            See Alice.
+            See Bob run.
+            See Alice run.
+            Run, Bob, run!
+            See Bob.
+            See Bob walk.
+            Run, Alice, run!
+            Walk, Bob, walk!
+        """.trimIndent()
+
+        return LogParser().parseText(logText, config)
+    }
+
     fun givenConfig(): Config {
         val configText = """
             start: See (?<name>\w+)\.
@@ -158,13 +203,24 @@ class StoryExtractorTest {
         return ConfigParser().parseString(configText)
     }
 
-    fun givenConfigWithRestart(): Config {
+    fun givenConfigWithUnparemeterizedRestart(): Config {
         val configText = """
-            restart: See (?<name>\w+)\.
+            restart: See \w+\.
             match: See (?<name>\w+) run\.
             end: Run, (?<name>\w+), run\!
         """.trimIndent()
 
         return ConfigParser().parseString(configText)
     }
+
+    fun givenConfigWithParameterizedRestart(): Config {
+        val configText = """
+            restart: See (?<name>\w+)\.
+            match: See (?<name>\w+) \w+\.
+            end: \w+, (?<name>\w+), \w+\!
+        """.trimIndent()
+
+        return ConfigParser().parseString(configText)
+    }
+
 }
