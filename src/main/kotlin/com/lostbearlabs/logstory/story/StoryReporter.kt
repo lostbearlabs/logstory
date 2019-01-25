@@ -1,27 +1,33 @@
 package com.lostbearlabs.logstory.story
 
+import java.io.PrintStream
+
 
 public class StoryReporter {
 
     public fun print(stories: List<Story>) {
+        print(stories, System.out)
+    }
+
+    fun print(stories: List<Story>, stream: PrintStream) {
         stories.forEach {
-            print(it)
+            print(it, stream)
         }
     }
 
-    fun print(story: Story) {
-        System.out.println()
-        System.out.println("===============")
+    fun print(story: Story, stream: PrintStream) {
+        stream.println()
+        stream.println("===============")
         if (!story.fields.isEmpty()) {
             story.fields.keys.sorted().forEach {
-                System.out.println("= ${it}: ${story.fields.get(it)}")
+                stream.println("= ${it}: ${story.fields.get(it)}")
             }
-            System.out.println("===============")
-            System.out.println()
+            stream.println("===============")
+            stream.println()
         }
 
         story.lines.forEach {
-            System.out.println(it.text)
+            stream.println(it.text)
         }
 
     }
