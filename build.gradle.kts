@@ -4,12 +4,18 @@
  * This generated file contains a sample Kotlin application project to get you started.
  */
 
+import org.gradle.jvm.tasks.Jar
+
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin on the JVM.
     id("org.jetbrains.kotlin.jvm").version("1.3.11")
 
     // Apply the application plugin to add support for building a CLI application.
     application
+
+    // Apply the shadow plugin to add support for building a fat jar
+    // https://imperceptiblethoughts.com/shadow/getting-started/#default-java-groovy-tasks
+    id("com.github.johnrengelman.shadow").version("4.0.4")
 }
 
 repositories {
@@ -27,9 +33,22 @@ dependencies {
 
     // Use the Kotlin JUnit integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+
+//    // To create a far jar
+//    api("com.github.jengelman.shadow:4.0.4")
 }
 
 application {
     // Define the main class for the application.
     mainClassName = "com.lostbearlabs.logstory.AppKt"
 }
+
+val jar: Jar by tasks
+jar.apply {
+    manifest.attributes.apply {
+        put("Main-Class", "com.lostbearlabs.logstory.AppKt")
+    }
+}
+
+//    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+

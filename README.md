@@ -10,7 +10,7 @@ LogStory is  a tool for analyzing log files.  Like `grep` it lets you search for
 Consider the following log file, which describes two dogs:
 
 ```
-# text file 'dog-story.txt'
+# text file 'dog-story.log'
 Watch the dogs run.
 Spot is a Dalmation.
 Bear is a Boxer.
@@ -20,12 +20,12 @@ See Bear run.
 Bear has a blue ball.
 ```
 
-If we want to separate the stories of the three dogs we can tell LogStory how they are structured using a configuration like this:
+If we want to separate the stories of the two dogs we can tell LogStory how they are structured using a configuration like this:
 
 ```
-# configuration 'dog-config'
+# configuration 'dog-story.cfg'
 
-start: (?<name>\w+) is a (?<breed>\w)
+start: (?<name>\w+) is a (?<breed>\w+)
 match, required: See (?<name>\w+) run
 end: (?<name>\w+) has a (?<color>w+) ball
 
@@ -34,21 +34,27 @@ end: (?<name>\w+) has a (?<color>w+) ball
 We can then run LogStory:
 
 ```
-$> logstory dog-config dog-story.txt
+$> logstory dog-story.cfg dog-story.log
 ```
 
 LogStory will identify each unique start line and then list all the related stories in the log file:
 
 ```
---- name=Spot
+===============
+= breed: Dalmation
+= name: Spot
+===============
+
 Spot is a Dalmation.
 See Spot run.
-Spot has a red ball.
 
--- name=Bear
+===============
+= breed: Boxer
+= name: Bear
+===============
+
 Bear is a Boxer.
 See Bear run.
-Bear has a blue ball.
 ```
 
 
@@ -119,4 +125,17 @@ Filter lines have the syntax:
 
 ```
 filter field value
+```
+
+
+## Development Notes
+
+To build the project:
+```
+./gradlew shadowJar
+```
+
+To run the project once you've built it:
+```
+java -jar ./build/libs/logstory.jar examples/dog-story.cfg examples/dog-story.log
 ```

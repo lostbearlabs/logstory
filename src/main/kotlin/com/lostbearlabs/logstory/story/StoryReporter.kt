@@ -14,8 +14,9 @@ public class StoryReporter {
         System.out.println("===============")
         if (!story.fields.isEmpty()) {
             story.fields.keys.sorted().forEach {
-                System.out.println("${it} = ${story.fields.get(it)}")
+                System.out.println("= ${it}: ${story.fields.get(it)}")
             }
+            System.out.println("===============")
             System.out.println()
         }
 
