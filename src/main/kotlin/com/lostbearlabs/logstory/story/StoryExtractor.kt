@@ -43,15 +43,16 @@ class StoryExtractor {
         completedStories.addAll(storiesEnded)
 
         // Create any new story that might be started by this line
-        val storiesStarted =  this.getStoriesStartedByLine(line, filters)
+        val storiesStarted =  this.getStoriesStartedByLine(line, filters, pendingStories)
         pendingStories.addAll(storiesStarted)
     }
 
-    private fun getStoriesStartedByLine(line: LogLine, filters: Set<ConfigFilter>): Collection<Story> {
+    private fun getStoriesStartedByLine(line: LogLine, filters: Set<ConfigFilter>, pendingStories : ArrayList<Story>): Collection<Story> {
         val storiesAdded = ArrayList<Story>()
 
         // This line might indicate the start of a new story.
         var start = false
+        var restart = false
 
         // Any new story must honor all filters.  Just apply them as values
         // to the story when it's created, and that will prevent any mis-matches
@@ -65,11 +66,22 @@ class StoryExtractor {
         // the line begins a story.
         line.matches.forEach {
             if (matchValuesToStory(it, story)) {
-                start = start || it.actions.contains(ConfigAction.START) || it.actions.contains(ConfigAction.RESTART)
+                start = start || it.actions.contains(ConfigAction.START)
+                restart = restart || it.actions.contains(ConfigAction.RESTART)
             }
         }
 
-        if (start ) {
+        // Is there already a pending story that matches this START line?  If so,
+        // then don't create another overlapping story
+        pendingStories.forEach {story ->
+            line.matches.forEach { match ->
+                if (matchValuesToStory(match, story)) {
+                    start = false
+                }
+            }
+        }
+
+        if (start || restart) {
             story.addLine(line)
             storiesAdded.add(story)
         }

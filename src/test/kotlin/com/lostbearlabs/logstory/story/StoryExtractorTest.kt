@@ -123,6 +123,32 @@ class StoryExtractorTest {
         assertEquals(setOf(bobStory), extractedStories)
     }
 
+    @Test
+    fun run_multipleStartsMatch_onlyReturnsOneStory() {
+        val config = givenConfigWithoutEnd()
+        val lines = givenLinesWithBobTwice(config)
+
+        val stories = StoryExtractor().run(lines, config)
+
+        val bobStory = """
+            See Bob.
+            See Bob run.
+            Run, Bob, run!
+            See Bob.
+            See Bob run.
+            Run, Bob, run!
+        """.trimIndent()
+
+        val aliceStory = """
+            See Alice.
+            See Alice run.
+            Run, Alice, run!
+        """.trimIndent()
+
+        val extractedStories = stories.stream().map { story -> story.toText() }.collect(Collectors.toSet());
+        assertEquals(setOf(bobStory, aliceStory), extractedStories)
+    }
+
     fun givenConfigWithTwoMatches(): Config {
 
         val configText = """
@@ -166,6 +192,22 @@ class StoryExtractorTest {
         return LogParser().parseText(logText, config)
     }
 
+    fun givenLinesWithBobTwice(config: Config): List<LogLine> {
+        val logText = """
+            See Bob.
+            See Alice.
+            See Bob run.
+            See Alice run.
+            Run, Bob, run!
+            Run, Alice, run!
+            See Bob.
+            See Bob run.
+            Run, Bob, run!
+        """.trimIndent()
+
+        return LogParser().parseText(logText, config)
+    }
+
     fun givenLinesWithThreeStories(config: Config): List<LogLine> {
         val logText = """
             See Bob.
@@ -187,6 +229,16 @@ class StoryExtractorTest {
             start: See (?<name>\w+)\.
             match: See (?<name>\w+) run\.
             end: Run, (?<name>\w+), run\!
+        """.trimIndent()
+
+        return ConfigParser().parseString(configText)
+    }
+
+    fun givenConfigWithoutEnd(): Config {
+        val configText = """
+            start: See (?<name>\w+)\.
+            match: See (?<name>\w+) run\.
+            match: Run, (?<name>\w+), run\!
         """.trimIndent()
 
         return ConfigParser().parseString(configText)

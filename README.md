@@ -57,6 +57,68 @@ Bear is a Boxer.
 See Bear run.
 ```
 
+## Tutorial: Alphabet Aerobics
+
+In the previous example, we specified a complete pattern for every log line we wanted to match.  This is not necessary.  LogStory will search for your specified pattern anywhere in the line, so you can provide a pattern that matches just a single element like an IP address.  This is useful for grouping lines by, say, server or client even if you don't know exactly what the lines are going to say.
+
+Consider the following log file:
+
+```
+(from Alphabet Aerobics, by Blackalicious)
+
+Artificial amateurs aren't at all amazing
+Analytically, I assault, animate things
+Broken barriers bounded by the bomb beat
+Buildings are broken, basically I'm bombarding
+Casually create catastrophes, casualties
+Canceling cats got their canopies collapsing
+Detonate a dime of dank daily doin' dough
+Demonstrations, Don Dada on the down low
+
+```
+
+We could specify a pattern that just matches the first letter of each line:
+
+```
+# configuration: 'alphabet-aerobics.cfg'
+
+start: ^(?<letter>[A-Z])
+```
+
+LogStory will then separate the lines into groups according to their first letter.  (In this particular case the lines are adjacent to each other in the file, but it would work equally well if they were interleaved.)
+
+```
+===============
+= letter: A
+===============
+
+Artificial amateurs aren't at all amazing
+Analytically, I assault, animate things
+
+===============
+= letter: B
+===============
+
+Broken barriers bounded by the bomb beat
+Buildings are broken, basically I'm bombarding
+
+===============
+= letter: C
+===============
+
+Casually create catastrophes, casualties
+Canceling cats got their canopies collapsing
+
+===============
+= letter: D
+===============
+
+Detonate a dime of dank daily doin' dough
+Demonstrations, Don Dada on the down low
+
+```
+
+
 
 ## Config Files
 
