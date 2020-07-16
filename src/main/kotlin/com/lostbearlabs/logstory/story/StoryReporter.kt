@@ -8,11 +8,12 @@ public class StoryReporter {
     public fun print(stories: List<Story>) {
         val stream = System.out
 
-        if( stories.size <= 10 ) {
+        if (stories.size <= 10) {
             printAllStories(stories, stream)
         } else {
             val sorted = stories.sortedBy { story -> story.lines.size }
             printStory(sorted[0], stream)
+            printStory(sorted[sorted.size / 2], stream)
             printStory(sorted.last(), stream)
             printSummary(sorted, stream)
         }

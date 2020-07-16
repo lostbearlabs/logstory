@@ -3,10 +3,10 @@ package com.lostbearlabs.logstory.story
 import com.lostbearlabs.logstory.config.Config
 import com.lostbearlabs.logstory.config.ConfigAction
 import com.lostbearlabs.logstory.config.ConfigFilter
+import com.lostbearlabs.logstory.config.ConfigPattern
 import com.lostbearlabs.logstory.log.LogLine
 import com.lostbearlabs.logstory.log.LogLineMatch
 
-// TODO: support filters
 // TODO: support multiple passes
 
 class StoryExtractor {
@@ -17,42 +17,72 @@ class StoryExtractor {
 
         var n = 0
         lines.forEach {
-            processLine(it, pendingStories, completedStories, config.filters)
+            processLine(it, pendingStories, completedStories, config)
             n++
-            if( n%1000==0 ) {
+            if (n % 1000 == 0) {
                 println("analyze: ${n}/${lines.size}")
             }
         }
 
         if (!config.isEndRequired()) {
-            completedStories.addAll(pendingStories)
+            val pendingStoriesHavingRequiredMatches = this.getStoriesWithRequiredMatches(pendingStories, config.patterns)
+            completedStories.addAll(pendingStoriesHavingRequiredMatches)
         }
         return completedStories
     }
 
     private fun processLine(line: LogLine, pendingStories: ArrayList<Story>, completedStories: ArrayList<Story>,
-                            filters : Set<ConfigFilter>) {
+                            config: Config) {
 
         // End any pending stories that will be restarted by this line
         val storiesRestarted = this.getStoriesRestartedByLine(line, pendingStories)
         pendingStories.removeAll(storiesRestarted)
-        completedStories.addAll(storiesRestarted)
+        val storiesRestartedAndHavingRequiredMatches = this.getStoriesWithRequiredMatches(storiesRestarted, config.patterns)
+        completedStories.addAll(storiesRestartedAndHavingRequiredMatches)
 
         // Add this line to any pending stories that it matches
         // (And update them with any new fields from the line)
         applyLineToStories(line, pendingStories)
 
-        // End any pending stories that are ended by this line
+        // Accumulate any pending stories that are ended by this line
         val storiesEnded = this.getStoriesEndedByLine(line, pendingStories)
         pendingStories.removeAll(storiesEnded)
-        completedStories.addAll(storiesEnded)
+        val storiedEndedAndHavingRequiredMatches = this.getStoriesWithRequiredMatches(storiesEnded, config.patterns)
+        completedStories.addAll(storiedEndedAndHavingRequiredMatches)
 
         // Create any new story that might be started by this line
-        val storiesStarted =  this.getStoriesStartedByLine(line, filters, pendingStories)
+        val storiesStarted = this.getStoriesStartedByLine(line, config.filters, pendingStories)
         pendingStories.addAll(storiesStarted)
     }
 
-    private fun getStoriesStartedByLine(line: LogLine, filters: Set<ConfigFilter>, pendingStories : ArrayList<Story>): Collection<Story> {
+    private fun getStoriesWithRequiredMatches(stories: ArrayList<Story>, patterns: Set<ConfigPattern>): List<Story> {
+        return stories.filter { story -> this.storyMatchesRequiredPatterns(story, patterns) }
+    }
+
+    /**
+     * If the config has required patterns, then check whether each of those patterns is present
+     * in the matches for this story.
+     */
+    private fun storyMatchesRequiredPatterns(story: Story, patterns: Set<ConfigPattern>): Boolean {
+        var requiredPatternsMatched = true;
+        for (pattern in patterns) {
+            if (pattern.actions.contains(ConfigAction.REQUIRED)) {
+                var patternMatched = false
+                for (line in story.lines) {
+                    for (match in line.matches) {
+                        if (match.patternName == pattern.patternName) {
+                            patternMatched = true
+                        }
+                    }
+                }
+                requiredPatternsMatched = requiredPatternsMatched && patternMatched
+            }
+        }
+
+        return requiredPatternsMatched
+    }
+
+    private fun getStoriesStartedByLine(line: LogLine, filters: Set<ConfigFilter>, pendingStories: ArrayList<Story>): Collection<Story> {
         val storiesAdded = ArrayList<Story>()
 
         // This line might indicate the start of a new story.
@@ -78,7 +108,7 @@ class StoryExtractor {
 
         // Is there already a pending story that matches this START line?  If so,
         // then don't create another overlapping story
-        pendingStories.forEach {pendingStory ->
+        pendingStories.forEach { pendingStory ->
             line.matches.forEach { match ->
                 if (matchValuesToStory(match, pendingStory)) {
                     start = false
@@ -94,19 +124,19 @@ class StoryExtractor {
         return storiesAdded
     }
 
-    private fun getStoriesRestartedByLine(line: LogLine, pendingStories: ArrayList<Story>) : ArrayList<Story> {
+    private fun getStoriesRestartedByLine(line: LogLine, pendingStories: ArrayList<Story>): ArrayList<Story> {
         return getStoriesMatchedByLineHavingAction(line, pendingStories, ConfigAction.RESTART)
     }
 
-    private fun getStoriesEndedByLine(line: LogLine, pendingStories: ArrayList<Story>) : ArrayList<Story> {
+    private fun getStoriesEndedByLine(line: LogLine, pendingStories: ArrayList<Story>): ArrayList<Story> {
         return getStoriesMatchedByLineHavingAction(line, pendingStories, ConfigAction.END)
     }
 
-    private fun getStoriesMatchedByLineHavingAction(line: LogLine, pendingStories: ArrayList<Story>, action: ConfigAction) : ArrayList<Story> {
+    private fun getStoriesMatchedByLineHavingAction(line: LogLine, pendingStories: ArrayList<Story>, action: ConfigAction): ArrayList<Story> {
         val storiesMatched = ArrayList<Story>()
 
         pendingStories.forEach {
-            if( storyMatchedByLineHavingAction(line, it, action)) {
+            if (storyMatchedByLineHavingAction(line, it, action)) {
                 storiesMatched.add(it)
             }
         }
@@ -114,6 +144,8 @@ class StoryExtractor {
         return storiesMatched
     }
 
+    // Returns true if the current LogLine is compatible with the story values and also
+    // matches some rule that has the desired action.
     private fun storyMatchedByLineHavingAction(line: LogLine, story: Story, action: ConfigAction): Boolean {
         var matched = false
         line.matches.forEach {
@@ -123,9 +155,6 @@ class StoryExtractor {
         }
         return matched
     }
-
-
-
 
 
     private fun applyLineToStories(line: LogLine, pendingStories: ArrayList<Story>) {

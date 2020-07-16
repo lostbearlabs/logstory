@@ -16,6 +16,10 @@ data class ConfigPattern(val actions: EnumSet<ConfigAction>, val pattern: Patter
         this.fieldNames = getNamedGroups(pattern)
     }
 
+    // To uniquely identify this pattern, just return its hash code, which will be the actual object ID
+    val patternName: String
+        get() = this.hashCode().toString()
+
     /**
      * The default data-class implementation of equality doesn't work because Pattern
      * doesn't implement equality.

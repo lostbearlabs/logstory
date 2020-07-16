@@ -28,7 +28,7 @@ public class LogLineParser {
                 fields.put(it, m.group(it))
             }
 
-            val match = LogLineMatch(pattern.actions, fields)
+            val match = LogLineMatch(pattern.actions, fields, pattern.patternName)
             matches.add(match)
         }
 

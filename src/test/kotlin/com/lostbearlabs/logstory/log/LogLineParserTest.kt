@@ -25,7 +25,8 @@ class LogLineParserTest {
                                 mapOf(
                                         Pair("foo", "abc"),
                                         Pair("bar", "xyz")
-                                )
+                                ),
+                                config.patterns.stream().findFirst().get().patternName
                         )))
 
         assertEquals(expected, line)
