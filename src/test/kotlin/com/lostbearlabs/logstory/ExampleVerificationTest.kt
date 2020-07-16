@@ -51,7 +51,7 @@ class ExampleVerificationTest {
 
         val baos = ByteArrayOutputStream()
         PrintStream(baos, true, "UTF-8").use {
-            StoryReporter().print(stories, it)
+            StoryReporter().printAllStories(stories, it)
         }
         val generatedText = String(baos.toByteArray(), StandardCharsets.UTF_8)
 

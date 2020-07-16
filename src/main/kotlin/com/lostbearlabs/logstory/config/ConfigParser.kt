@@ -8,6 +8,9 @@ import java.util.regex.Pattern
 // TODO: VALIDATION?
 // -- check that use of END/REQUIRED is consistent?
 
+/**
+ * Parser that reads the text of a .cfg file and parses it into a Config object in memory.
+ */
 class ConfigParser {
     val filterLine = "filter (\\w+) (\\w+)".toRegex()
     val patternLine = "([\\w, ]+): (.+)".toRegex()

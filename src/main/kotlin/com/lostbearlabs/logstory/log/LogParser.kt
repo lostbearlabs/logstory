@@ -24,6 +24,9 @@ class LogParser {
                 lst.add(line)
             }
             n++
+            if( n%100000==0 ) {
+                println("parse: ${n}/${ar.size}")
+            }
         }
 
         return lst

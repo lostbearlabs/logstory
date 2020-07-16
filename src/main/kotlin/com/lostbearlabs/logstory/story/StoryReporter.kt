@@ -6,16 +6,33 @@ import java.io.PrintStream
 public class StoryReporter {
 
     public fun print(stories: List<Story>) {
-        print(stories, System.out)
-    }
+        val stream = System.out
 
-    fun print(stories: List<Story>, stream: PrintStream) {
-        stories.forEach {
-            print(it, stream)
+        if( stories.size <= 10 ) {
+            printAllStories(stories, stream)
+        } else {
+            val sorted = stories.sortedBy { story -> story.lines.size }
+            printStory(sorted[0], stream)
+            printStory(sorted.last(), stream)
+            printSummary(sorted, stream)
         }
     }
 
-    fun print(story: Story, stream: PrintStream) {
+    fun printSummary(sortedStories: List<Story>, stream: PrintStream) {
+        stream.println()
+        stream.println("===============")
+        stream.println("total num stories: ${sortedStories.size}")
+        stream.println("shortest length: ${sortedStories[0].lines.size}")
+        stream.println("longest length: ${sortedStories.last().lines.size}")
+    }
+
+    fun printAllStories(stories: List<Story>, stream: PrintStream) {
+        for (story in stories) {
+            printStory(story, stream)
+        }
+    }
+
+    fun printStory(story: Story, stream: PrintStream) {
         stream.println()
         stream.println("===============")
         if (!story.fields.isEmpty()) {
@@ -26,9 +43,15 @@ public class StoryReporter {
             stream.println()
         }
 
-        story.lines.forEach {
-            stream.println(it.text)
+        var n = 0
+        for (line in story.lines) {
+            stream.println(line.text)
+            n++
+            if (n > 100) {
+                stream.println("... truncated, ${story.lines.size} lines total")
+                break
+            }
         }
-
     }
+
 }

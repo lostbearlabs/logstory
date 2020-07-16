@@ -15,8 +15,13 @@ class StoryExtractor {
         val pendingStories = ArrayList<Story>()
         val completedStories = ArrayList<Story>()
 
+        var n = 0
         lines.forEach {
             processLine(it, pendingStories, completedStories, config.filters)
+            n++
+            if( n%1000==0 ) {
+                println("analyze: ${n}/${lines.size}")
+            }
         }
 
         if (!config.isEndRequired()) {
@@ -73,9 +78,9 @@ class StoryExtractor {
 
         // Is there already a pending story that matches this START line?  If so,
         // then don't create another overlapping story
-        pendingStories.forEach {story ->
+        pendingStories.forEach {pendingStory ->
             line.matches.forEach { match ->
-                if (matchValuesToStory(match, story)) {
+                if (matchValuesToStory(match, pendingStory)) {
                     start = false
                 }
             }
