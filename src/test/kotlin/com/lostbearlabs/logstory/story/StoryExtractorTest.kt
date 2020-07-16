@@ -255,6 +255,74 @@ class StoryExtractorTest {
         assertEquals(setOf(bobStory, aliceStory), extractedStories)
     }
 
+    @Test
+    fun run_oneWithForbiddenMatch_onlyReturnsOneStory() {
+        val configText = """
+            start: See (?<name>\w+)\.
+            match, forbidden: See (?<name>\w+) run\.
+            end, required: Run, (?<name>\w+), run\!
+        """.trimIndent()
+
+        val config = ConfigParser().parseString(configText)
+
+        val logText = """
+            See Bob.
+            See Alice.
+            See Bob run.
+            Run, Bob, run!
+            Run, Alice, run!
+        """.trimIndent()
+
+        var lines = LogParser().parseText(logText, config)
+
+        val stories = StoryExtractor().run(lines, config)
+
+        val aliceStory = """
+            See Alice.
+            Run, Alice, run!
+        """.trimIndent()
+
+        val extractedStories = stories.stream().map { story -> story.toText() }.collect(Collectors.toSet());
+        assertEquals(setOf(aliceStory), extractedStories)
+    }
+
+    @Test
+    fun run_valuesOverlap_honorConfigOrderAndStartLine() {
+        val configText = """
+            start: x=(?<x>\d+) y=(?<y>\d+)
+            match: x=(?<x>\d+)
+            match: y=(?<y>\d+)
+            match: y=(?<x>\d+)
+        """.trimIndent()
+
+        val config = ConfigParser().parseString(configText)
+
+        val logText = """
+            A y=1
+            B x=2 y=3
+            C x=4
+            D y=5
+            E y=3
+            F x=6
+            G x=2
+            H y=2
+        """.trimIndent()
+
+        var lines = LogParser().parseText(logText, config)
+
+        val stories = StoryExtractor().run(lines, config)
+
+        val story = """
+            B x=2 y=3
+            E y=3
+            G x=2
+            H y=2
+        """.trimIndent()
+
+        val extractedStories = stories.stream().map(Story::toText).collect(Collectors.toSet());
+        assertEquals(setOf(story), extractedStories)
+    }
+
     fun givenConfigWithTwoMatches(): Config {
 
         val configText = """

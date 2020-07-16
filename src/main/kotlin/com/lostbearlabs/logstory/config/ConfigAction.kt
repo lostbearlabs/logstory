@@ -7,6 +7,7 @@ enum class ConfigAction {
     START,
     END,
     REQUIRED,
+    FORBIDDEN,
     MATCH,
     RESTART
 }

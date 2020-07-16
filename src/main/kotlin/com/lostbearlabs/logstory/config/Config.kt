@@ -4,7 +4,7 @@ package com.lostbearlabs.logstory.config
  * In-memory representation of a config file.
  */
 public data class Config(
-        val patterns: Set<ConfigPattern>,
+        val patterns: ArrayList<ConfigPattern>,
         val filters: Set<ConfigFilter>) {
 
     /**

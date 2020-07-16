@@ -144,6 +144,7 @@ The possible values for `action` are:
 * `end` - a line matching this pattern marks the end of a story.
 * `match` - a line matching this pattern can be part of a story but is neither the beginning nor the end.
 * `required` - at least one line matching this pattern must be part of every story.  This can be combined with `end` or `match`.
+* `forbidden` - an otherwise valid story will be excluded if it contains a forbidden match.
 
 ### Regular Expressions
 

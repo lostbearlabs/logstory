@@ -7,8 +7,6 @@ import com.lostbearlabs.logstory.config.ConfigPattern
 import com.lostbearlabs.logstory.log.LogLine
 import com.lostbearlabs.logstory.log.LogLineMatch
 
-// TODO: support multiple passes
-
 class StoryExtractor {
 
     fun run(lines: List<LogLine>, config: Config): List<Story> {
@@ -55,7 +53,7 @@ class StoryExtractor {
         pendingStories.addAll(storiesStarted)
     }
 
-    private fun getStoriesWithRequiredMatches(stories: ArrayList<Story>, patterns: Set<ConfigPattern>): List<Story> {
+    private fun getStoriesWithRequiredMatches(stories: ArrayList<Story>, patterns: List<ConfigPattern>): List<Story> {
         return stories.filter { story -> this.storyMatchesRequiredPatterns(story, patterns) }
     }
 
@@ -63,10 +61,12 @@ class StoryExtractor {
      * If the config has required patterns, then check whether each of those patterns is present
      * in the matches for this story.
      */
-    private fun storyMatchesRequiredPatterns(story: Story, patterns: Set<ConfigPattern>): Boolean {
+    private fun storyMatchesRequiredPatterns(story: Story, patterns: List<ConfigPattern>): Boolean {
         var requiredPatternsMatched = true;
         for (pattern in patterns) {
-            if (pattern.actions.contains(ConfigAction.REQUIRED)) {
+            val required = pattern.actions.contains(ConfigAction.REQUIRED)
+            val forbidden = pattern.actions.contains(ConfigAction.FORBIDDEN)
+            if (required || forbidden) {
                 var patternMatched = false
                 for (line in story.lines) {
                     for (match in line.matches) {
@@ -75,7 +75,11 @@ class StoryExtractor {
                         }
                     }
                 }
-                requiredPatternsMatched = requiredPatternsMatched && patternMatched
+                requiredPatternsMatched = if( required ) {
+                    requiredPatternsMatched && patternMatched
+                } else {
+                    requiredPatternsMatched && !patternMatched
+                }
             }
         }
 
@@ -97,7 +101,7 @@ class StoryExtractor {
             story.fields[it.fieldName] = it.fieldValue
         }
 
-        // Is there a START pattern that matches this line?  If so,
+        // Is there a START or RESTART pattern that matches this line?  If so,
         // the line begins a story.
         line.matches.forEach {
             if (matchValuesToStory(it, story)) {
@@ -107,7 +111,7 @@ class StoryExtractor {
         }
 
         // Is there already a pending story that matches this START line?  If so,
-        // then don't create another overlapping story
+        // then don't create another overlapping story.
         pendingStories.forEach { pendingStory ->
             line.matches.forEach { match ->
                 if (matchValuesToStory(match, pendingStory)) {

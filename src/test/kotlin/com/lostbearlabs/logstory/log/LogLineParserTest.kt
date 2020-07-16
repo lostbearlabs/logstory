@@ -6,6 +6,7 @@ import com.lostbearlabs.logstory.config.ConfigPattern
 import org.junit.Test
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.collections.ArrayList
 import kotlin.test.assertEquals
 
 class LogLineParserTest {
@@ -19,7 +20,7 @@ class LogLineParserTest {
         val line = parser.parse(0, text, config.patterns);
 
         val expected = LogLine(0, text,
-                setOf(
+                arrayListOf(
                         LogLineMatch(
                                 EnumSet.of(ConfigAction.MATCH),
                                 mapOf(
@@ -37,7 +38,7 @@ class LogLineParserTest {
         val actions = EnumSet.of(ConfigAction.MATCH)
         var rx = Pattern.compile("(?<foo>abc)(?<bar>xyz)")
         var pattern = ConfigPattern(actions, rx)
-        return Config(setOf(pattern), HashSet())
+        return Config(arrayListOf(pattern), HashSet())
     }
 
 }

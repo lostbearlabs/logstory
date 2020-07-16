@@ -22,7 +22,7 @@ class ConfigParser {
 
     fun parseString(text: String): Config {
         val filters = HashSet<ConfigFilter>()
-        val patterns = HashSet<ConfigPattern>()
+        val patterns = ArrayList<ConfigPattern>()
 
         val lines = text.split("\n", "\r")
         var lineNumber = 1
@@ -43,7 +43,7 @@ class ConfigParser {
         return Config(patterns, filters)
     }
 
-    fun parsePattern(line: String, patterns: HashSet<ConfigPattern>): Boolean {
+    fun parsePattern(line: String, patterns: ArrayList<ConfigPattern>): Boolean {
         val m = this.patternLine.matchEntire(line)
         if (m == null) {
             return false

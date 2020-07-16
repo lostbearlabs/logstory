@@ -7,9 +7,9 @@ public class LogLineParser {
 
     fun parse(lineNumber: Int,
               text: String,
-              patterns: Set<ConfigPattern>): LogLine {
+              patterns: ArrayList<ConfigPattern>): LogLine {
 
-        val matches = HashSet<LogLineMatch>()
+        val matches = ArrayList<LogLineMatch>()
 
         patterns.forEach {
             parse(text, it, matches)
@@ -19,7 +19,7 @@ public class LogLineParser {
     }
 
     private fun parse(text: String, pattern: ConfigPattern,
-                      matches: HashSet<LogLineMatch>) {
+                      matches: ArrayList<LogLineMatch>) {
 
         val m = pattern.pattern.matcher(text)
         while (m.find()) {

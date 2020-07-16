@@ -42,7 +42,19 @@ class ConfigParserTest {
         val config = parser.parseString(text)
 
         val expected = ConfigPattern(EnumSet.of(ConfigAction.MATCH), Pattern.compile(rx))
-        assertEquals(setOf(expected), config.patterns);
+        assertEquals(listOf(expected), config.patterns);
+    }
+
+    @Test
+    fun parse_forbiddenMatch_recordsMatch() {
+        val rx = "abc"
+        val text = "match, forbidden: $rx"
+        val parser = ConfigParser()
+
+        val config = parser.parseString(text)
+
+        val expected = ConfigPattern(EnumSet.of(ConfigAction.MATCH, ConfigAction.FORBIDDEN), Pattern.compile(rx))
+        assertEquals(listOf(expected), config.patterns);
     }
 
     @Test
@@ -54,7 +66,7 @@ class ConfigParserTest {
         val config = parser.parseString(text)
 
         val expected = ConfigPattern(EnumSet.of(ConfigAction.REQUIRED, ConfigAction.END), Pattern.compile(rx))
-        assertEquals(setOf(expected), config.patterns);
+        assertEquals(listOf(expected), config.patterns)
     }
 
     @Test
