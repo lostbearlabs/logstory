@@ -3,9 +3,10 @@ package com.lostbearlabs.logstory.config
 /**
  * In-memory representation of a config file.
  */
-public data class Config(
+data class Config(
         val patterns: ArrayList<ConfigPattern>,
-        val filters: Set<ConfigFilter>) {
+        val filters: Set<ConfigFilter>,
+        val directives: Set<ConfigDirective>) {
 
     /**
      * If ANY end line is marked as required, then

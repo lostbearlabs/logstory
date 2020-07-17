@@ -146,6 +146,12 @@ The possible values for `action` are:
 * `required` - at least one line matching this pattern must be part of every story.  This can be combined with `end` or `match`.
 * `forbidden` - an otherwise valid story will be excluded if it contains a forbidden match.
 
+### Directives
+
+The following directions can be used:
+
+* `stats` - print out statistics about the number of times each pattern is matched, etc.
+
 ### Regular Expressions
 
 The regex's in the config file use Java's regular expression syntax.

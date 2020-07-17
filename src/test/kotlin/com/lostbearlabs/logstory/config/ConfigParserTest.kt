@@ -128,5 +128,16 @@ class ConfigParserTest {
 
         assertFalse(config.isEndRequired())
     }
+
+    @Test
+    fun parse_statsDirective_setsStats() {
+        val text = """
+            !stats
+        """.trimIndent()
+        val parser = ConfigParser()
+        val config = parser.parseString(text)
+
+        assertTrue(config.directives.contains(ConfigDirective.STATS));
+    }
 }
 

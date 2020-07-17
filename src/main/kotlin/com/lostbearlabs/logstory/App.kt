@@ -3,6 +3,7 @@
  */
 package com.lostbearlabs.logstory
 
+import com.lostbearlabs.logstory.config.ConfigDirective
 import com.lostbearlabs.logstory.config.ConfigParser
 import com.lostbearlabs.logstory.log.LogParser
 import com.lostbearlabs.logstory.story.StoryExtractor
@@ -38,6 +39,9 @@ fun main(args: Array<String>) {
     val lines = LogParser().parseFile(logFile, config)
     val stories = StoryExtractor().run(lines, config)
 
-    // TODO pretty print
     StoryReporter().print(stories)
+
+    if( config.directives.contains(ConfigDirective.STATS)) {
+        StatsReporter().print(stories, config)
+    }
 }

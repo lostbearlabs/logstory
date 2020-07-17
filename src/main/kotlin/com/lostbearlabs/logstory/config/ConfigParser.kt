@@ -4,6 +4,7 @@ import java.io.File
 import java.text.ParseException
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.collections.HashSet
 
 // TODO: VALIDATION?
 // -- check that use of END/REQUIRED is consistent?
@@ -23,6 +24,7 @@ class ConfigParser {
     fun parseString(text: String): Config {
         val filters = HashSet<ConfigFilter>()
         val patterns = ArrayList<ConfigPattern>()
+        val directives = HashSet<ConfigDirective>();
 
         val lines = text.split("\n", "\r")
         var lineNumber = 1
@@ -31,7 +33,8 @@ class ConfigParser {
             // trim any comments
             val line = it.split("#")[0]
 
-            if (line == "" || parseFilter(line, filters) || parsePattern(line, patterns)) {
+            if (line == "" || parseFilter(line, filters) || parsePattern(line, patterns)
+                    || parseDirective(line, directives)) {
                 // noop
             } else {
                 throw ParseException("invalid line: $line", lineNumber)
@@ -40,7 +43,21 @@ class ConfigParser {
             lineNumber++
         }
 
-        return Config(patterns, filters)
+        return Config(patterns, filters, directives)
+    }
+
+    fun parseDirective(line: String, directives: HashSet<ConfigDirective>): Boolean {
+        val ar = line.split(" ", ",")
+        var found = false;
+        ar.forEach {
+            ConfigDirective.values().forEach { en ->
+                if ("!"+en.toString().toUpperCase() == it.toUpperCase()) {
+                    directives.add(en)
+                    found = true
+                }
+            }
+        }
+        return found
     }
 
     fun parsePattern(line: String, patterns: ArrayList<ConfigPattern>): Boolean {
