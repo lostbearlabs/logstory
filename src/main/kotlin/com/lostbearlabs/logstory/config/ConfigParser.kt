@@ -25,6 +25,7 @@ class ConfigParser {
         val filters = HashSet<ConfigFilter>()
         val patterns = ArrayList<ConfigPattern>()
         val directives = HashSet<ConfigDirective>();
+        val files = ArrayList<File>()
 
         val lines = text.split("\n", "\r")
         var lineNumber = 1
@@ -34,7 +35,7 @@ class ConfigParser {
             val line = it.split("#")[0]
 
             if (line == "" || parseFilter(line, filters) || parsePattern(line, patterns)
-                    || parseDirective(line, directives)) {
+                    || parseDirective(line, directives) || parseFile(line, files)) {
                 // noop
             } else {
                 throw ParseException("invalid line: $line", lineNumber)
@@ -43,7 +44,16 @@ class ConfigParser {
             lineNumber++
         }
 
-        return Config(patterns, filters, directives)
+        return Config(patterns, filters, directives, files)
+    }
+
+    fun parseFile(line: String, files: ArrayList<File>): Boolean {
+        val ar = line.split(" ", ",")
+        if (ar.size == 2 && ar[0] == "!file") {
+            files.add(File(ar[1]));
+            return true;
+        }
+        return false;
     }
 
     fun parseDirective(line: String, directives: HashSet<ConfigDirective>): Boolean {
@@ -51,7 +61,7 @@ class ConfigParser {
         var found = false;
         ar.forEach {
             ConfigDirective.values().forEach { en ->
-                if ("!"+en.toString().toUpperCase() == it.toUpperCase()) {
+                if ("!" + en.toString().toUpperCase() == it.toUpperCase()) {
                     directives.add(en)
                     found = true
                 }

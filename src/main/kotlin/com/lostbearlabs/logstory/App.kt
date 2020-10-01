@@ -5,10 +5,12 @@ package com.lostbearlabs.logstory
 
 import com.lostbearlabs.logstory.config.ConfigDirective
 import com.lostbearlabs.logstory.config.ConfigParser
+import com.lostbearlabs.logstory.log.LogLine
 import com.lostbearlabs.logstory.log.LogParser
 import com.lostbearlabs.logstory.story.StoryExtractor
 import com.lostbearlabs.logstory.story.StoryReporter
 import java.io.File
+import kotlin.system.exitProcess
 
 class App {
     val greeting: String
@@ -18,30 +20,45 @@ class App {
 }
 
 fun main(args: Array<String>) {
-    if (args.size != 2) {
-        System.out.println("Usage:  logstory <configFile> <logFile>")
-        System.exit(1)
+    if (args.size != 1 && args.size != 2) {
+        println("Usage:  logstory <configFile> [<logFile>]")
+        exitProcess(1)
     }
 
     val configFile = File(args[0])
     if (!configFile.exists()) {
-        System.out.println("Config file not found: " + configFile.path)
-        System.exit(0)
-    }
-
-    val logFile = File(args[1])
-    if (!logFile.exists()) {
-        System.out.println("Log file not found: " + logFile.path)
-        System.exit(0)
+        println("Config file not found: " + configFile.path)
+        exitProcess(0)
     }
 
     val config = ConfigParser().parseFile(configFile)
-    val lines = LogParser().parseFile(logFile, config)
+    if (args.size == 2) {
+        config.addFile(File(args[1]))
+    }
+
+    config.files.forEach {
+        if (!it.exists()) {
+            println("Log file not found: " + it.path)
+            exitProcess(0)
+        }
+    }
+
+    if (config.files.size == 0) {
+        println("no log files specified on command line or in config");
+        exitProcess(0);
+    }
+
+    val lines = ArrayList<LogLine>();
+    config.files.forEach {
+        var fileLines = LogParser().parseFile(it, config)
+        lines.addAll(fileLines)
+    }
+
     val stories = StoryExtractor().run(lines, config)
 
     StoryReporter().print(stories)
 
-    if( config.directives.contains(ConfigDirective.STATS)) {
+    if (config.directives.contains(ConfigDirective.STATS)) {
         StatsReporter().print(stories, config)
     }
 }

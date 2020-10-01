@@ -9,6 +9,7 @@ class LogParser {
     fun parseFile(file: File, cfg: Config): List<LogLine> {
         // TODO: this will truncate at 2GB, really should read
         // it line-by-line instead
+        println("parsing log file: ${file.path}")
         val text = file.readText()
         return this.parseText(text, cfg)
     }
@@ -25,10 +26,11 @@ class LogParser {
             }
             n++
             if( n%100000==0 ) {
-                println("parse: ${n}/${ar.size}")
+                println("... parse ${n}/${ar.size}")
             }
         }
 
+        println("... ${lst.size} lines matched at least one pattern")
         return lst
     }
 

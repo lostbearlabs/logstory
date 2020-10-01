@@ -150,7 +150,8 @@ The possible values for `action` are:
 
 The following directions can be used:
 
-* `stats` - print out statistics about the number of times each pattern is matched, etc.
+* `!stats` - print out statistics about the number of times each pattern is matched, etc.
+* `!file [path]` - lets you specify a log file to be analyzed directly in the config file instead of at the command line.
 
 ### Regular Expressions
 

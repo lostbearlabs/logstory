@@ -38,7 +38,7 @@ class LogLineParserTest {
         val actions = EnumSet.of(ConfigAction.MATCH)
         var rx = Pattern.compile("(?<foo>abc)(?<bar>xyz)")
         var pattern = ConfigPattern(actions, rx)
-        return Config(arrayListOf(pattern), HashSet(), HashSet())
+        return Config(arrayListOf(pattern), HashSet(), HashSet(), ArrayList())
     }
 
 }

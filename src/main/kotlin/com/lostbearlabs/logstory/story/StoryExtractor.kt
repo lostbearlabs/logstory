@@ -18,7 +18,7 @@ class StoryExtractor {
             processLine(it, pendingStories, completedStories, config)
             n++
             if (n % 1000 == 0) {
-                println("analyze: ${n}/${lines.size}")
+                println("... analyze ${n}/${lines.size}")
             }
         }
 

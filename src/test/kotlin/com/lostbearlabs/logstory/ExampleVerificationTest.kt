@@ -56,6 +56,6 @@ class ExampleVerificationTest {
         val generatedText = String(baos.toByteArray(), StandardCharsets.UTF_8)
 
         assertEquals(expectedText, generatedText, "Output does not match for file: $outFile")
-        System.out.println("verified example $name ok")
+        println("verified example $name ok")
     }
 }
